@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import secrets
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from auth.models import TokenBlocklist
 
 load_dotenv()
 
@@ -30,6 +31,13 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt = JWTManager(app)
+
+    # Register JWT callbacks
+    @jwt.token_in_blocklist_loader
+    def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+        jti = jwt_payload["jti"]
+        token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+        return token is not None
 
     # Import and register blueprints
     from auth.routes import auth_bp
