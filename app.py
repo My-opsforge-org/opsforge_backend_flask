@@ -40,6 +40,7 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(explore_bp, url_prefix='/api')
 
     return app
 
