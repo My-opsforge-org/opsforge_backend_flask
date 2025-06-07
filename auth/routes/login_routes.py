@@ -9,9 +9,16 @@ bcrypt = Bcrypt()
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    user = User.query.filter_by(username=data['username']).first()
+    identifier = data['username']  # This can be username or email
+    password = data['password']
+
+    # Check if identifier is an email
+    if '@' in identifier:
+        user = User.query.filter_by(email=identifier).first()
+    else:
+        user = User.query.filter_by(username=identifier).first()
     
-    if user and bcrypt.check_password_hash(user.password, data['password']):
+    if user and bcrypt.check_password_hash(user.password, password):
         # Convert user.id to string for JWT token
         access_token = create_access_token(identity=str(user.id))
         return jsonify({
@@ -19,4 +26,4 @@ def login():
             'message': 'Login successful'
         }), 200
     
-    return jsonify({'error': 'Invalid username or password'}), 401 
+    return jsonify({'error': 'Invalid username/email or password'}), 401 
