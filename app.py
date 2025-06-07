@@ -5,11 +5,13 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import secrets
-from auth.models import db
-from auth.routes import auth_bp
-from explore import explore_bp, init_app
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 load_dotenv()
+
+db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
@@ -22,21 +24,23 @@ def create_app():
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
     app.config['JWT_BLACKLIST_ENABLED'] = True
     app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize extensions
     db.init_app(app)
+    migrate.init_app(app, db)
     jwt = JWTManager(app)
+
+    # Import and register blueprints
+    from auth.routes import auth_bp
+    from explore import explore_bp, init_app
 
     # Initialize explore blueprint
     init_app(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(explore_bp)
-
-    # Create database tables
-    with app.app_context():
-        db.create_all()
+    app.register_blueprint(explore_bp, url_prefix='/api')
 
     return app
 
