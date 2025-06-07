@@ -28,16 +28,15 @@ wheels/
 venv/
 ENV/
 
-# Database
-*.db
-*.sqlite3
-
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db 
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log 
