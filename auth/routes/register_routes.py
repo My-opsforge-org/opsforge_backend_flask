@@ -9,6 +9,18 @@ bcrypt = Bcrypt()
 def register():
     data = request.get_json()
     
+    # Validate username (no @ allowed)
+    if '@' in data['username']:
+        return jsonify({
+            'error': 'Username cannot contain @ symbol'
+        }), 400
+    
+    # Validate email (must contain @)
+    if '@' not in data['email']:
+        return jsonify({
+            'error': 'Invalid email format'
+        }), 400
+    
     # Check if user already exists
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'error': 'Username already exists'}), 400
