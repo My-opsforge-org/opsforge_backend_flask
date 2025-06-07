@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import os
@@ -6,11 +7,13 @@ from dotenv import load_dotenv
 import secrets
 from auth.models import db
 from auth.routes import auth_bp
+from explore import explore_bp, init_app
 
 load_dotenv()
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
 
     # Configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
@@ -24,8 +27,12 @@ def create_app():
     db.init_app(app)
     jwt = JWTManager(app)
 
+    # Initialize explore blueprint
+    init_app(app)
+
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(explore_bp)
 
     # Create database tables
     with app.app_context():
