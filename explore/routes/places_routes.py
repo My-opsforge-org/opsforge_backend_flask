@@ -13,7 +13,6 @@ def get_places():
         lng = request.args.get('lng')
         radius = request.args.get('radius', '1500')  # Default 1.5km radius
         type = request.args.get('type', 'tourist_attraction')  # Default type
-        
         if not lat or not lng:
             return jsonify({
                 'error': 'Latitude and longitude are required'

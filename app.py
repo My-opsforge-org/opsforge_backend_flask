@@ -8,10 +8,13 @@ import secrets
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+# Load environment variables
 load_dotenv()
 
+# Initialize extensions
 db = SQLAlchemy()
 migrate = Migrate()
+jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
@@ -26,10 +29,18 @@ def create_app():
     app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Initialize extensions
+    # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
-    jwt = JWTManager(app)
+    jwt.init_app(app)
+
+    # Register JWT callbacks
+    @jwt.token_in_blocklist_loader
+    def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+        from auth.models import TokenBlocklist
+        jti = jwt_payload["jti"]
+        token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+        return token is not None
 
     # Import and register blueprints
     from auth.routes import auth_bp
@@ -46,4 +57,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True) 
