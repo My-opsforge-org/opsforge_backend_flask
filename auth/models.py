@@ -1,8 +1,6 @@
 from datetime import datetime
 import json
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from app import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,6 +12,7 @@ class User(db.Model):
     bio = db.Column(db.Text, nullable=True)
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(20), nullable=True)
+    sun_sign = db.Column(db.String(20), nullable=True)
     interests = db.Column(db.Text, nullable=True)  # Store as JSON string
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
@@ -38,6 +37,7 @@ class User(db.Model):
             'bio': self.bio,
             'age': self.age,
             'gender': self.gender,
+            'sun_sign': self.sun_sign,
             'interests': interests,
             'location': {
                 'lat': self.latitude,
@@ -68,6 +68,13 @@ class User(db.Model):
             if gender not in ['male', 'female', 'other']:
                 raise ValueError("Invalid gender value")
             self.gender = gender
+        if 'sun_sign' in data:
+            sun_sign = str(data['sun_sign']).lower()
+            valid_signs = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 
+                          'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
+            if sun_sign not in valid_signs:
+                raise ValueError("Invalid sun sign")
+            self.sun_sign = sun_sign
         if 'interests' in data:
             try:
                 self.interests = json.dumps(data['interests'])
@@ -90,4 +97,4 @@ class User(db.Model):
 class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36), nullable=False, unique=True)
-    created_at = db.Column(db.DateTime, nullable=False) 
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) 
