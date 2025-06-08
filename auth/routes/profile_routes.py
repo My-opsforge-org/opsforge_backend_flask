@@ -10,9 +10,12 @@ def get_profile():
     user = User.query.get(int(current_user_id))
     
     if not user:
+        db.session.close()
         return jsonify({'error': 'User not found'}), 404
-    
-    return jsonify(user.to_dict()), 200
+
+    response = jsonify(user.to_dict()), 200
+    db.session.close()
+    return response
 
 @auth_bp.route('/profile', methods=['PUT'])
 @jwt_required()
@@ -21,22 +24,28 @@ def update_profile():
     user = User.query.get(int(current_user_id))
     
     if not user:
+        db.session.close()
         return jsonify({'error': 'User not found'}), 404
     
     data = request.get_json()
     if not data:
+        db.session.close()
         return jsonify({'error': 'No data provided'}), 400
     
     try:
         user.update_from_dict(data)
         db.session.commit()
-        return jsonify({
+        response = jsonify({
             'message': 'Profile updated successfully',
             'user': user.to_dict()
         }), 200
+        db.session.close()
+        return response
     except ValueError as e:
         db.session.rollback()
+        db.session.close()
         return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
+        db.session.close()
         return jsonify({'error': 'Failed to update profile'}), 500 
