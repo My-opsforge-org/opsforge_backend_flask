@@ -45,6 +45,7 @@ def create_app():
     # Import and register blueprints
     from auth.routes import auth_bp
     from explore import explore_bp, init_app
+    from community import community_bp
 
     # Initialize explore blueprint
     init_app(app)
@@ -52,6 +53,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(explore_bp, url_prefix='/api')
+    app.register_blueprint(community_bp, url_prefix='/api')
 
     return app
 
