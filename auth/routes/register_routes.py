@@ -10,12 +10,6 @@ bcrypt = Bcrypt()
 def register():
     data = request.get_json()
     
-    # Validate username (no @ allowed)
-    if '@' in data['username']:
-        return jsonify({
-            'error': 'Username cannot contain @ symbol'
-        }), 400
-    
     # Validate email (must contain @)
     if '@' not in data['email']:
         return jsonify({
@@ -24,15 +18,13 @@ def register():
     
     # Check if user already exists
     try:
-        if User.query.filter_by(username=data['username']).first():
-            return jsonify({'error': 'Username already exists'}), 400
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'Email already exists'}), 400
         
         # Create new user
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
         new_user = User(
-            username=data['username'],
+            name=data['name'],
             email=data['email'],
             password=hashed_password
         )
