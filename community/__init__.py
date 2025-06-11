@@ -1,2 +1,9 @@
 # Community package 
-from .routes import community_bp 
+from flask import Blueprint
+from .routes import init_app
+
+community_bp = Blueprint('community_main', __name__)
+
+def init_app(app):
+    from .routes import init_app as init_routes
+    init_routes(app) 

@@ -42,18 +42,15 @@ def create_app():
         token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
         return token is not None
 
-    # Import and register blueprints
-    from auth.routes import auth_bp
-    from explore import explore_bp, init_app
-    from community import community_bp
+    # Import blueprints
+    from auth.routes import auth_bp, init_app as init_auth
+    from explore import explore_bp, init_app as init_explore
+    from community import community_bp, init_app as init_community
 
-    # Initialize explore blueprint
-    init_app(app)
-
-    # Register blueprints
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(explore_bp, url_prefix='/api')
-    app.register_blueprint(community_bp, url_prefix='/api')
+    # Initialize blueprints
+    init_auth(app)
+    init_explore(app)
+    init_community(app)
 
     return app
 

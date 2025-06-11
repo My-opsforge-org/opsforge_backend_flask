@@ -3,13 +3,17 @@ from flask_jwt_extended import create_access_token
 from flask_bcrypt import Bcrypt
 from auth.models import User
 from . import auth_bp
-from app import db  # Import db instance
+from app import db
 
 bcrypt = Bcrypt()
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+    
+    if not data or 'email' not in data or 'password' not in data:
+        return jsonify({'error': 'Email and password are required'}), 400
+        
     email = data['email']
     password = data['password']
 
@@ -26,4 +30,4 @@ def login():
         
         return jsonify({'error': 'Invalid email or password'}), 401
     finally:
-        db.session.close()  # Ensure session is closed
+        db.session.close()

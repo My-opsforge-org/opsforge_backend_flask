@@ -2,6 +2,12 @@ from datetime import datetime
 import json
 from app import db
 
+# Association table for user following
+followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -17,6 +23,14 @@ class User(db.Model):
     longitude = db.Column(db.Float, nullable=True)
     createdAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updatedAt = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Following relationships
+    following = db.relationship(
+        'User', secondary=followers,
+        primaryjoin=(followers.c.follower_id == id),
+        secondaryjoin=(followers.c.followed_id == id),
+        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic'
+    )
 
     def __repr__(self):
         return f'<User {self.name}>'
@@ -42,7 +56,9 @@ class User(db.Model):
                 'lng': self.longitude
             } if self.latitude is not None and self.longitude is not None else None,
             'createdAt': self.createdAt.isoformat() if self.createdAt else None,
-            'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None
+            'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None,
+            'followers_count': self.followers.count(),
+            'following_count': self.following.count()
         }
 
     def update_from_dict(self, data):
@@ -91,6 +107,21 @@ class User(db.Model):
                         raise ValueError("Invalid latitude/longitude values")
                 except (ValueError, TypeError):
                     raise ValueError("Invalid location format")
+
+    def follow(self, user):
+        if not self.is_following(user):
+            self.following.append(user)
+            return True
+        return False
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.following.remove(user)
+            return True
+        return False
+
+    def is_following(self, user):
+        return self.following.filter(followers.c.followed_id == user.id).count() > 0
 
 class TokenBlocklist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
