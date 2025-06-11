@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from community.models import Post, db
+from community.models import Post, Image, db
 from . import community_bp
 
 @community_bp.route('/profile/posts', methods=['POST'])
@@ -13,12 +13,21 @@ def create_profile_post():
         return jsonify({'error': 'Title and content are required'}), 400
     
     try:
+        image_urls = data.get('image_urls', [])
+        if not isinstance(image_urls, list):
+            return jsonify({'error': 'image_urls must be a list'}), 400
+        
         new_post = Post(
             title=data['title'],
             content=data['content'],
             author_id=int(current_user_id),
             post_type='profile'
         )
+        
+        # Add images
+        for url in image_urls:
+            image = Image(url=url, post=new_post)
+            db.session.add(image)
         
         db.session.add(new_post)
         db.session.commit()
@@ -75,6 +84,18 @@ def update_profile_post(post_id):
             post.title = data['title']
         if 'content' in data:
             post.content = data['content']
+        if 'image_urls' in data:
+            if not isinstance(data['image_urls'], list):
+                return jsonify({'error': 'image_urls must be a list'}), 400
+            
+            # Remove existing images
+            for image in post.images:
+                db.session.delete(image)
+            
+            # Add new images
+            for url in data['image_urls']:
+                image = Image(url=url, post=post)
+                db.session.add(image)
         
         db.session.commit()
         return jsonify({

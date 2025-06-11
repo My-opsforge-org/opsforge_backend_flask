@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from auth.models import User
-from community.models import Community, Post
+from community.models import Community, Post, Image
 
 post_bp = Blueprint('post', __name__)
 
@@ -31,22 +31,36 @@ def create_post(community_id):
     
     title = data.get('title')
     content = data.get('content')
+    image_urls = data.get('image_urls', [])
     
     if not title or not content:
         return jsonify({'error': 'Title and content are required'}), 400
     
-    post = Post(
-        title=title,
-        content=content,
-        author_id=user_id,
-        community_id=community_id,
-        post_type='community'
-    )
+    # Validate image_urls is a list
+    if not isinstance(image_urls, list):
+        return jsonify({'error': 'image_urls must be a list'}), 400
     
-    db.session.add(post)
-    db.session.commit()
-    
-    return jsonify(post.to_dict()), 201
+    try:
+        post = Post(
+            title=title,
+            content=content,
+            author_id=user_id,
+            community_id=community_id,
+            post_type='community'
+        )
+        
+        # Add images
+        for url in image_urls:
+            image = Image(url=url, post=post)
+            db.session.add(image)
+        
+        db.session.add(post)
+        db.session.commit()
+        
+        return jsonify(post.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @post_bp.route('/communities/<int:community_id>/posts', methods=['GET'])
 @jwt_required()
@@ -85,14 +99,31 @@ def update_post(post_id):
     data = request.get_json()
     title = data.get('title')
     content = data.get('content')
+    image_urls = data.get('image_urls')
     
-    if title:
-        post.title = title
-    if content:
-        post.content = content
-    
-    db.session.commit()
-    return jsonify(post.to_dict()), 200
+    try:
+        if title:
+            post.title = title
+        if content:
+            post.content = content
+        if image_urls is not None:
+            if not isinstance(image_urls, list):
+                return jsonify({'error': 'image_urls must be a list'}), 400
+            
+            # Remove existing images
+            for image in post.images:
+                db.session.delete(image)
+            
+            # Add new images
+            for url in image_urls:
+                image = Image(url=url, post=post)
+                db.session.add(image)
+        
+        db.session.commit()
+        return jsonify(post.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @post_bp.route('/posts/<int:post_id>', methods=['DELETE'])
 @jwt_required()

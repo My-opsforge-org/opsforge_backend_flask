@@ -33,6 +33,19 @@ class Community(db.Model):
         # Check if any member's ID matches the user_id
         return any(member.id == user_id for member in self.members)
 
+class Image(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'url': self.url,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -45,6 +58,7 @@ class Post(db.Model):
     post_type = db.Column(db.String(20), nullable=False, default='profile')  # 'profile' or 'community'
     
     author = db.relationship('User', backref=db.backref('posts', lazy='dynamic'))
+    images = db.relationship('Image', backref='post', lazy='dynamic', cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade='all, delete-orphan')
     reactions = db.relationship('Reaction', backref='post', lazy='dynamic', cascade='all, delete-orphan')
     bookmarks = db.relationship('Bookmark', backref='post', lazy='dynamic', cascade='all, delete-orphan')
@@ -59,6 +73,7 @@ class Post(db.Model):
             'author_id': self.author_id,
             'community_id': self.community_id,
             'post_type': self.post_type,
+            'images': [image.to_dict() for image in self.images],
             'likes_count': self.reactions.filter_by(reaction_type='like').count(),
             'dislikes_count': self.reactions.filter_by(reaction_type='dislike').count(),
             'comments_count': self.comments.count(),
