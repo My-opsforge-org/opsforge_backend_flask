@@ -48,4 +48,31 @@ def update_profile():
     except Exception as e:
         db.session.rollback()
         db.session.close()
-        return jsonify({'error': 'Failed to update profile'}), 500 
+        return jsonify({'error': 'Failed to update profile'}), 500
+
+@auth_bp.route('/users', methods=['GET'])
+@jwt_required()
+def get_all_users():
+    try:
+        # Get pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        # Query users with pagination
+        paginated_users = User.query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        # Prepare response
+        users_data = [user.to_dict() for user in paginated_users.items]
+        
+        return jsonify({
+            'users': users_data,
+            'total': paginated_users.total,
+            'pages': paginated_users.pages,
+            'current_page': page,
+            'has_next': paginated_users.has_next,
+            'has_prev': paginated_users.has_prev
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.session.close() 
