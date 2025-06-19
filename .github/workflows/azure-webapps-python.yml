@@ -33,7 +33,7 @@ jobs:
 
       - name: Generate initial migration
         run: |
-          python db_commands.py migrate "Initial migration"
+          python db_commands.py migrate "Initial migration" || true
         env:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
