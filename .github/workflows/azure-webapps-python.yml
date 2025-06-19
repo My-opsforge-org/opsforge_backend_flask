@@ -24,38 +24,38 @@ jobs:
           pip install -r requirements.txt
 
       # Reset DB and migrations (for dev/test only!)
-      - name: Drop all tables in the database
-        run: |
-          python init_db.py
-        env:
-          FLASK_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # - name: Drop all tables in the database
+      #   run: |
+      #     python init_db.py
+      #   env:
+      #     FLASK_ENV: production
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Delete migrations directory
-        run: |
-          rm -rf migrations
+      # - name: Delete migrations directory
+      #   run: |
+      #     rm -rf migrations
 
-      - name: Initialize DB migrations
-        run: |
-          export FLASK_APP=manage.py && flask db init || true
-        env:
-          FLASK_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # - name: Initialize DB migrations
+      #   run: |
+      #     export FLASK_APP=manage.py && flask db init || true
+      #   env:
+      #     FLASK_ENV: production
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Generate migration
-        run: |
-          export FLASK_APP=manage.py && flask db migrate "Auto migration" || true
-        env:
-          FLASK_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # - name: Generate migration
+      #   run: |
+      #     export FLASK_APP=manage.py && flask db migrate "Auto migration" || true
+      #   env:
+      #     FLASK_ENV: production
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       # Only apply migrations; do not generate or initialize in CI/CD to avoid altering existing tables
-      - name: Apply DB migrations
-        run: |
-          export FLASK_APP=manage.py && flask db upgrade
-        env:
-          FLASK_ENV: production
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # - name: Apply DB migrations
+      #   run: |
+      #     export FLASK_APP=manage.py && flask db upgrade
+      #   env:
+      #     FLASK_ENV: production
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Clean app directory on VM
         run: |
