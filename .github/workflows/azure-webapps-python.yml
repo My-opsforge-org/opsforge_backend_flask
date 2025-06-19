@@ -1,4 +1,4 @@
-name: Deploy Flask app to Azure Web App
+name: Deploy Flask app to Azure VM
 
 on:
   push:
@@ -57,18 +57,27 @@ jobs:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: .
+      - name: Copy code to VM
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no -r . ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/home/${{ secrets.VM_USERNAME }}/app
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+      - name: Install dependencies and start app on VM
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
+            cd /home/${{ secrets.VM_USERNAME }}/app && \
+            python3 -m venv venv && \
+            source venv/bin/activate && \
+            pip install --upgrade pip && \
+            pip install -r requirements.txt && \
+            pkill gunicorn || true && \
+            nohup gunicorn -w 4 -b 0.0.0.0:8000 app:app & \
+          "
+
+# Required secrets:
+# VM_PUBLIC_IP: The public IP of your Azure VM (from Terraform output)
+# VM_USERNAME: The admin username for your VM (e.g., azureuser)
+# VM_PASSWORD: The admin password for your VM
+# DATABASE_URL: Your PostgreSQL connection string
 
 # Instructions:
 # 1. Paste your actual publish profile XML in the publish-profile field above.
