@@ -1,0 +1,49 @@
+name: Deploy Flask app to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Optional: Run DB migrations if needed
+      - name: Apply DB migrations
+        run: |
+          python db_commands.py upgrade
+        env:
+          FLASK_ENV: production
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: .
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
+
+# Instructions:
+# 1. Paste your actual publish profile XML in the publish-profile field above.
+# 2. The app will use the values set by Terraform at runtime.
+# 3. The workflow runs on push to main and can be triggered manually. 
