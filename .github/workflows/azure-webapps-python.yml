@@ -84,7 +84,7 @@ jobs:
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
             cd /home/${{ secrets.VM_USERNAME }}/app && \
             source venv/bin/activate && \
-            pkill -f gunicorn || true && \
+            pkill -f gunicorn || true \
           "
 
       - name: Running Gunicorn
