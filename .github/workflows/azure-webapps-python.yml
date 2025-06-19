@@ -22,7 +22,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
       # Reset DB and migrations (for dev/test only!)
       # - name: Drop all tables in the database
       #   run: |
@@ -63,11 +62,9 @@ jobs:
             rm -rf /home/${{ secrets.VM_USERNAME }}/app && \
             mkdir -p /home/${{ secrets.VM_USERNAME }}/app \
           "
-
       - name: Copy code to VM
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no -r . ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/home/${{ secrets.VM_USERNAME }}/app
-
       - name: Install dependencies on VM
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
@@ -78,24 +75,10 @@ jobs:
             pip install --upgrade pip && \
             pip install -r requirements.txt \
           "
-
-      - name: Start Gunicorn
+      - name: Deploy and Start App
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 --access-logfile gunicorn.log --error-logfile gunicorn-error.log manage:app > gunicorn.log 2>&1 &"
-      
-      - name: Check Gunicorn Status
-        run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && echo 'Gunicorn started with PID:' && pgrep -f gunicorn"
-
-      - name: Verify App is Running
-        run: |
-          sleep 5
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "echo '=== Gunicorn processes ===' && pgrep -af gunicorn || echo 'No Gunicorn processes found' && echo '=== Gunicorn logs ===' && cat /home/${{ secrets.VM_USERNAME }}/app/gunicorn.log || echo 'No log file found' && echo '=== Gunicorn error logs ===' && cat /home/${{ secrets.VM_USERNAME }}/app/gunicorn-error.log || echo 'No error log file found'"
-
-      - name: Check System Logs
-        run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "echo '=== System logs (last 20 lines) ===' && journalctl -n 20 --no-pager && echo '=== App directory contents ===' && ls -la /home/${{ secrets.VM_USERNAME }}/app/ && echo '=== Python processes ===' && ps aux | grep python || echo 'No Python processes'"
-
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 &"
+          
 # Required secrets:
 # VM_PUBLIC_IP: The public IP of your Azure VM (from Terraform output)
 # VM_USERNAME: The admin username for your VM (e.g., azureuser)
@@ -105,4 +88,4 @@ jobs:
 # Instructions:
 # 1. Paste your actual publish profile XML in the publish-profile field above.
 # 2. The app will use the values set by Terraform at runtime.
-# 3. The workflow runs on push to main and can be triggered manually. 
+# 3. The workflow runs on push to main and can be triggered manually.
