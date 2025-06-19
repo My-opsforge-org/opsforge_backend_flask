@@ -23,7 +23,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Optional: Run DB migrations if needed
+      # Run DB migrations (init, migrate, upgrade)
+      - name: Initialize DB migrations
+        run: |
+          python db_commands.py init
+        env:
+          FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Generate initial migration
+        run: |
+          python db_commands.py migrate "Initial migration"
+        env:
+          FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Apply DB migrations
         run: |
           python db_commands.py upgrade
