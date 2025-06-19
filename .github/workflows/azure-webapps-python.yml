@@ -29,6 +29,7 @@ jobs:
           python db_commands.py upgrade
         env:
           FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
