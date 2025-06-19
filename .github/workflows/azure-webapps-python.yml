@@ -81,7 +81,11 @@ jobs:
 
       - name: Start Gunicorn
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 --access-logfile gunicorn.log --error-logfile gunicorn-error.log manage:app > gunicorn.log 2>&1 & && echo 'Gunicorn started with PID:' && pgrep -f gunicorn"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 --access-logfile gunicorn.log --error-logfile gunicorn-error.log manage:app > gunicorn.log 2>&1 &"
+      
+      - name: Check Gunicorn Status
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && echo 'Gunicorn started with PID:' && pgrep -f gunicorn"
 
       - name: Verify App is Running
         run: |
