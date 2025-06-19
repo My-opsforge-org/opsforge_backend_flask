@@ -71,4 +71,4 @@ websocket-client==1.8.0
 Werkzeug==2.0.3
 wikipedia==1.4.0
 wsproto==1.2.0
-yfinance==0.2.55
+# yfinance==0.2.55
