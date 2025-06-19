@@ -37,14 +37,14 @@ jobs:
 
       - name: Initialize DB migrations
         run: |
-          python db_commands.py init || true
+          export FLASK_APP=manage.py && flask db init || true
         env:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Generate migration
         run: |
-          python db_commands.py migrate "Auto migration" || true
+          export FLASK_APP=manage.py && flask db migrate "Auto migration" || true
         env:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -52,7 +52,7 @@ jobs:
       # Only apply migrations; do not generate or initialize in CI/CD to avoid altering existing tables
       - name: Apply DB migrations
         run: |
-          python db_commands.py upgrade
+          export FLASK_APP=manage.py && flask db upgrade
         env:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -68,15 +68,6 @@ jobs:
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no -r . ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/home/${{ secrets.VM_USERNAME }}/app
 
-      - name: Install systemd service
-        run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no gunicorn.service ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/tmp/
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
-            sudo cp /tmp/gunicorn.service /etc/systemd/system/ && \
-            sudo systemctl daemon-reload && \
-            sudo systemctl enable gunicorn \
-          "
-
       - name: Install dependencies and start app on VM
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
@@ -86,9 +77,17 @@ jobs:
             source venv/bin/activate && \
             pip install --upgrade pip && \
             pip install -r requirements.txt && \
-            pkill -f gunicorn || true && \
-            nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & \
+            pkill -f gunicorn || true \
+          "
+
+      - name: Start Gunicorn after delay
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
+            cd /home/${{ secrets.VM_USERNAME }}/app && \
+            source venv/bin/activate && \
             sleep 5 && \
+            nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & \
+            sleep 3 && \
             pgrep -af gunicorn \
           "
 
