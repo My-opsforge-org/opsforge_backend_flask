@@ -68,6 +68,15 @@ jobs:
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no -r . ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/home/${{ secrets.VM_USERNAME }}/app
 
+      - name: Install systemd service
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no gunicorn.service ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/tmp/
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
+            sudo cp /tmp/gunicorn.service /etc/systemd/system/ && \
+            sudo systemctl daemon-reload && \
+            sudo systemctl enable gunicorn \
+          "
+
       - name: Install dependencies and start app on VM
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
