@@ -57,6 +57,13 @@ jobs:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Clean app directory on VM
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
+            rm -rf /home/${{ secrets.VM_USERNAME }}/app && \
+            mkdir -p /home/${{ secrets.VM_USERNAME }}/app \
+          "
+
       - name: Copy code to VM
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} scp -o StrictHostKeyChecking=no -r . ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }}:/home/${{ secrets.VM_USERNAME }}/app
