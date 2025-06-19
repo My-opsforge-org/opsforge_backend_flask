@@ -81,19 +81,23 @@ jobs:
 
       - name: Start Gunicorn on VM
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=60 -o ServerAliveCountMax=3 ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
             cd /home/${{ secrets.VM_USERNAME }}/app && \
             source venv/bin/activate && \
             pkill -f gunicorn || true && \
-            echo 'Starting Gunicorn...' && \
             nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & \
-            echo 'Gunicorn started, waiting 5 seconds...' && \
-            sleep 5 && \
+            echo 'Gunicorn started in background' \
+          "
+
+      - name: Verify Gunicorn is running
+        run: |
+          sleep 10
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
+            cd /home/${{ secrets.VM_USERNAME }}/app && \
             echo 'Checking Gunicorn processes:' && \
             pgrep -af gunicorn || echo 'No Gunicorn processes found' && \
             echo 'Gunicorn log (last 10 lines):' && \
-            tail -n 10 gunicorn.log || echo 'No log file found' && \
-            echo 'Deployment completed successfully' \
+            tail -n 10 gunicorn.log || echo 'No log file found' \
           "
 
 # Required secrets:
