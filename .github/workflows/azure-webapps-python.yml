@@ -3,7 +3,7 @@ name: Deploy Flask app to Azure Web App
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
