@@ -79,25 +79,22 @@ jobs:
             pip install -r requirements.txt \
           "
 
-      - name: Start Gunicorn on VM
+      - name: Kill Gunicorn on VM
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
             cd /home/${{ secrets.VM_USERNAME }}/app && \
             source venv/bin/activate && \
             pkill -f gunicorn || true && \
-            nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & \
-            echo 'Gunicorn started in background' \
           "
 
-      - name: Verify Gunicorn is running
+      - name: Running Gunicorn
         run: |
           sleep 10
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
             cd /home/${{ secrets.VM_USERNAME }}/app && \
-            echo 'Checking Gunicorn processes:' && \
-            pgrep -af gunicorn || echo 'No Gunicorn processes found' && \
-            echo 'Gunicorn log (last 10 lines):' && \
-            tail -n 10 gunicorn.log || echo 'No log file found' \
+            source venv/bin/activate && \
+            nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & \
+            echo 'Gunicorn started in background' \
           "
 
 # Required secrets:
