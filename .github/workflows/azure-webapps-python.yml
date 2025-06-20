@@ -86,7 +86,7 @@ jobs:
             python init_db.py && \
             export FLASK_APP=app.py && \
             flask db init && \
-            flask db migrate 'Initial migration' && \
+            flask db migrate -m 'Initial migration' && \
             flask db upgrade \
           "
       - name: Deploy and Start App
