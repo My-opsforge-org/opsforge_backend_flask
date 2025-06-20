@@ -40,6 +40,7 @@ jobs:
         env:
           FLASK_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          
 
       - name: Generate migration
         run: |
