@@ -22,39 +22,43 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      # Reset DB and migrations (for dev/test only!)
-      # - name: Drop all tables in the database
-      #   run: |
-      #     python init_db.py
-      #   env:
-      #     FLASK_ENV: production
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Drop all tables in the database
+        run: |
+          python init_db.py
+        env:
+          FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      # - name: Delete migrations directory
-      #   run: |
-      #     rm -rf migrations
+      - name: Delete migrations directory
+        run: |
+          rm -rf migrations
 
-      # - name: Initialize DB migrations
-      #   run: |
-      #     export FLASK_APP=manage.py && flask db init || true
-      #   env:
-      #     FLASK_ENV: production
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Initialize DB migrations
+        run: |
+          export FLASK_APP=manage.py && flask db init || true
+        env:
+          FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      # - name: Generate migration
-      #   run: |
-      #     export FLASK_APP=manage.py && flask db migrate "Auto migration" || true
-      #   env:
-      #     FLASK_ENV: production
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Generate migration
+        run: |
+          export FLASK_APP=manage.py && flask db migrate -m "Auto migration" || true
+        env:
+          FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      # Only apply migrations; do not generate or initialize in CI/CD to avoid altering existing tables
-      # - name: Apply DB migrations
-      #   run: |
-      #     export FLASK_APP=manage.py && flask db upgrade
-      #   env:
-      #     FLASK_ENV: production
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Apply DB migrations
+        run: |
+          export FLASK_APP=manage.py && flask db upgrade
+        env:
+          FLASK_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
 
       - name: Clean app directory on VM
         run: |
@@ -75,23 +79,9 @@ jobs:
             pip install --upgrade pip && \
             pip install -r requirements.txt \
           "
-      - name: Initialize Database on VM
-        run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "\
-            cd /home/${{ secrets.VM_USERNAME }}/app && \
-            source venv/bin/activate && \
-            pkill gunicorn || true && \
-            rm -f users.db && \
-            rm -rf migrations && \
-            python init_db.py && \
-            export FLASK_APP=app.py && \
-            flask db init && \
-            flask db migrate -m 'Initial migration' && \
-            flask db upgrade \
-          "
       - name: Deploy and Start App
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 &"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && export DATABASE_URL='${{ secrets.DATABASE_URL }}' && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 &"
           
 # Required secrets:
 # VM_PUBLIC_IP: The public IP of your Azure VM (from Terraform output)
