@@ -3,7 +3,7 @@
 ## Authentication
 
 ### Register
-- **POST** `/register`
+- **POST** `/api/register`
 - **Payload:**
 ```json
 {
@@ -18,7 +18,7 @@
 ```
 
 ### Login
-- **POST** `/login`
+- **POST** `/api/login`
 - **Payload:**
 ```json
 {
@@ -39,7 +39,7 @@
 ## Profile
 
 ### Get Profile
-- **GET** `/profile` (JWT required)
+- **GET** `/api/profile` (JWT required)
 - **Response (200):**
 ```json
 {
@@ -51,7 +51,7 @@
 ```
 
 ### Update Profile
-- **PUT** `/profile` (JWT required)
+- **PUT** `/api/profile` (JWT required)
 - **Payload:**
 ```json
 {
@@ -67,7 +67,7 @@
 ```
 
 ### Get All Users
-- **GET** `/users` (JWT required)
+- **GET** `/api/users` (JWT required)
 - **Query:** `?page=1&per_page=10`
 - **Response (200):**
 ```json
@@ -86,28 +86,28 @@
 ## Follow System
 
 ### Follow User
-- **POST** `/users/<user_id>/follow` (JWT required)
+- **POST** `/api/users/<user_id>/follow` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Successfully followed <name>"}
 ```
 
 ### Unfollow User
-- **POST** `/users/<user_id>/unfollow` (JWT required)
+- **POST** `/api/users/<user_id>/unfollow` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Successfully unfollowed <name>"}
 ```
 
 ### Get Followers
-- **GET** `/users/<user_id>/followers` (JWT required)
+- **GET** `/api/users/<user_id>/followers` (JWT required)
 - **Response (200):**
 ```json
 {"followers": [ {"id": 2, "name": "..."}, ... ]}
 ```
 
 ### Get Following
-- **GET** `/users/<user_id>/following` (JWT required)
+- **GET** `/api/users/<user_id>/following` (JWT required)
 - **Response (200):**
 ```json
 {"following": [ {"id": 3, "name": "..."}, ... ]}
@@ -118,7 +118,7 @@
 ## Community
 
 ### Create Community
-- **POST** `/communities` (JWT required)
+- **POST** `/api/communities` (JWT required)
 - **Payload:**
 ```json
 {
@@ -132,14 +132,14 @@
 ```
 
 ### Get All Communities
-- **GET** `/communities` (JWT required)
+- **GET** `/api/communities` (JWT required)
 - **Response (200):**
 ```json
 [{"id": 1, "name": "Nature Lovers", ...}, ...]
 ```
 
 ### Get Community Details
-- **GET** `/communities/<community_id>` (JWT required)
+- **GET** `/api/communities/<community_id>` (JWT required)
 - **Response (200):**
 ```json
 {
@@ -152,21 +152,21 @@
 ```
 
 ### Join Community
-- **POST** `/communities/<community_id>/join` (JWT required)
+- **POST** `/api/communities/<community_id>/join` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Joined community"}
 ```
 
 ### Leave Community
-- **POST** `/communities/<community_id>/leave` (JWT required)
+- **POST** `/api/communities/<community_id>/leave` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Left community"}
 ```
 
 ### Get Joined Communities
-- **GET** `/communities/joined` (JWT required)
+- **GET** `/api/communities/joined` (JWT required)
 - **Response (200):**
 ```json
 [{"id": 1, "name": "Nature Lovers", ...}, ...]
@@ -177,7 +177,7 @@
 ## Community Posts
 
 ### Create Community Post
-- **POST** `/communities/<community_id>/posts` (JWT required)
+- **POST** `/api/communities/<community_id>/posts` (JWT required)
 - **Payload:**
 ```json
 {
@@ -196,14 +196,14 @@
 ```
 
 ### Get Community Posts
-- **GET** `/communities/<community_id>/posts` (JWT required)
+- **GET** `/api/communities/<community_id>/posts` (JWT required)
 - **Response (200):**
 ```json
 [{"id": 1, "title": "Trip to the mountains", ...}, ...]
 ```
 
 ### Get Post by ID
-- **GET** `/posts/<post_id>` (JWT required)
+- **GET** `/api/posts/<post_id>` (JWT required)
 - **Response (200):**
 ```json
 {
@@ -215,7 +215,7 @@
 ```
 
 ### Update Post
-- **PUT** `/posts/<post_id>` (JWT required, only author)
+- **PUT** `/api/posts/<post_id>` (JWT required, only author)
 - **Payload:**
 ```json
 {
@@ -234,7 +234,7 @@
 ```
 
 ### Delete Post
-- **DELETE** `/posts/<post_id>` (JWT required, only author)
+- **DELETE** `/api/posts/<post_id>` (JWT required, only author)
 - **Response (200):**
 ```json
 {"message": "Post deleted successfully"}
@@ -245,7 +245,7 @@
 ## Profile Posts
 
 ### Create Profile Post
-- **POST** `/profile/posts` (JWT required)
+- **POST** `/api/profile/posts` (JWT required)
 - **Payload:**
 ```json
 {
@@ -263,7 +263,7 @@
 ```
 
 ### Get User Profile Posts
-- **GET** `/profile/<user_id>/posts` (JWT required)
+- **GET** `/api/profile/<user_id>/posts` (JWT required)
 - **Response (200):**
 ```json
 {
@@ -272,7 +272,7 @@
 ```
 
 ### Update Profile Post
-- **PUT** `/profile/posts/<post_id>` (JWT required, only author)
+- **PUT** `/api/profile/posts/<post_id>` (JWT required, only author)
 - **Payload:**
 ```json
 {
@@ -290,7 +290,7 @@
 ```
 
 ### Delete Profile Post
-- **DELETE** `/profile/posts/<post_id>` (JWT required, only author)
+- **DELETE** `/api/profile/posts/<post_id>` (JWT required, only author)
 - **Response (200):**
 ```json
 {"message": "Post deleted successfully"}
@@ -301,7 +301,7 @@
 ## Comments
 
 ### Create Comment
-- **POST** `/posts/<post_id>/comments` (JWT required)
+- **POST** `/api/posts/<post_id>/comments` (JWT required)
 - **Payload:**
 ```json
 {
@@ -318,7 +318,7 @@
 ```
 
 ### Get Comments for Post
-- **GET** `/posts/<post_id>/comments` (JWT required)
+- **GET** `/api/posts/<post_id>/comments` (JWT required)
 - **Response (200):**
 ```json
 [
@@ -328,7 +328,7 @@
 ```
 
 ### Update Comment
-- **PUT** `/comments/<comment_id>` (JWT required, only author)
+- **PUT** `/api/comments/<comment_id>` (JWT required, only author)
 - **Payload:**
 ```json
 {
@@ -345,7 +345,7 @@
 ```
 
 ### Delete Comment
-- **DELETE** `/comments/<comment_id>` (JWT required, only author)
+- **DELETE** `/api/comments/<comment_id>` (JWT required, only author)
 - **Response (200):**
 ```json
 {"message": "Comment deleted successfully"}
@@ -356,21 +356,21 @@
 ## Bookmarks
 
 ### Bookmark Post
-- **POST** `/posts/<post_id>/bookmark` (JWT required)
+- **POST** `/api/posts/<post_id>/bookmark` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Post bookmarked successfully"}
 ```
 
 ### Remove Bookmark
-- **DELETE** `/posts/<post_id>/bookmark` (JWT required)
+- **DELETE** `/api/posts/<post_id>/bookmark` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Bookmark removed successfully"}
 ```
 
 ### Get Bookmarked Posts
-- **GET** `/bookmarks` (JWT required)
+- **GET** `/api/bookmarks` (JWT required)
 - **Response (200):**
 ```json
 [
@@ -384,21 +384,21 @@
 ## Reactions
 
 ### Like Post
-- **POST** `/posts/<post_id>/like` (JWT required)
+- **POST** `/api/posts/<post_id>/like` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Post liked successfully"}
 ```
 
 ### Dislike Post
-- **POST** `/posts/<post_id>/dislike` (JWT required)
+- **POST** `/api/posts/<post_id>/dislike` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Post disliked successfully"}
 ```
 
 ### Remove Reaction
-- **DELETE** `/posts/<post_id>/reaction` (JWT required)
+- **DELETE** `/api/posts/<post_id>/reaction` (JWT required)
 - **Response (200):**
 ```json
 {"message": "Reaction removed successfully"}
@@ -409,7 +409,7 @@
 ## Feed
 
 ### Get Feed
-- **GET** `/feed` (JWT required)
+- **GET** `/api/feed` (JWT required)
 - **Query:** `?page=1&per_page=10`
 - **Response (200):**
 ```json
@@ -428,7 +428,7 @@
 ## Explore
 
 ### Get Places
-- **GET** `/places` (JWT required)
+- **GET** `/api/explore/places` (JWT required)
 - **Query:** `?lat=...&lng=...&radius=1500&type=tourist_attraction`
 - **Response (200):**
 ```json
@@ -439,7 +439,7 @@
 ```
 
 ### Geocode Address
-- **GET** `/geocode` (JWT required)
+- **GET** `/api/explore/geocode` (JWT required)
 - **Query:** `?address=...`
 - **Response (200):**
 ```json
