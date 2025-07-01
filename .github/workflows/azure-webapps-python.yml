@@ -86,11 +86,11 @@ jobs:
 
       - name: Deploy and Start App
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && source .env && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 &"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && source .env && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & echo 'Gunicorn started with PID:' \$!"
 
       - name: Verify Gunicorn is Running
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "sleep 5 && if pgrep -f gunicorn > /dev/null; then echo '✅ Gunicorn is running successfully'; else echo '❌ Gunicorn failed to start'; exit 1; fi"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "sleep 5 && if pgrep -f gunicorn > /dev/null; then echo '✅ Gunicorn is running successfully'; ps aux | grep gunicorn; else echo '❌ Gunicorn failed to start'; echo 'Checking gunicorn logs:'; cat gunicorn.log; exit 1; fi"
           
           
 # Required secrets:
