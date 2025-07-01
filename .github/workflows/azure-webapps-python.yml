@@ -82,15 +82,27 @@ jobs:
           "
       - name: Set Environment Variables
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && echo 'export DATABASE_URL=\"postgresql://postgres:admin@gotrip-postgres.postgres.database.azure.com:5432/gotripdb\"' >> .env && echo 'export JWT_SECRET_KEY=\"aftabs_jwt_secret_key\"' >> .env && echo 'export SECRET_KEY=\"aftabs_secret_key\"' >> .env && echo 'export GOOGLE_PLACES_API_KEY=\"AIzaSyDMOv3ucij8PQPtVLPvFZ88arhaRfl0lEA\"' >> .env && echo '=== Environment file created ===' && cat .env"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && echo 'export DATABASE_URL=\"postgresql://postgres:admin@gotrip-postgres.postgres.database.azure.com:5432/gotripdb\"' > .env && echo 'export JWT_SECRET_KEY=\"aftabs_jwt_secret_key\"' >> .env && echo 'export SECRET_KEY=\"aftabs_secret_key\"' >> .env && echo 'export GOOGLE_PLACES_API_KEY=\"AIzaSyDMOv3ucij8PQPtVLPvFZ88arhaRfl0lEA\"' >> .env && echo '=== Environment file created ===' && cat .env"
 
       - name: Deploy and Start App
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && source .env && pkill -f gunicorn || true && nohup gunicorn -w 4 -b 0.0.0.0:8000 manage:app > gunicorn.log 2>&1 & echo 'Gunicorn started with PID:' \$!"
 
+      - name: Check Gunicorn Processes
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "sleep 3 && ps aux | grep gunicorn"
+
+      - name: Check Gunicorn Logs
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cat gunicorn.log"
+
+      - name: Check Port Status
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "netstat -tlnp | grep :8000 || echo 'Port 8000 not listening'"
+
       - name: Verify Gunicorn is Running
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "sleep 5 && echo '=== Checking gunicorn processes ===' && ps aux | grep gunicorn && echo '=== Checking gunicorn logs ===' && cat gunicorn.log && echo '=== Checking if port 8000 is listening ===' && netstat -tlnp | grep :8000 || echo 'Port 8000 not listening' && if pgrep -f gunicorn > /dev/null; then echo '✅ Gunicorn is running successfully'; else echo '❌ Gunicorn failed to start'; exit 1; fi"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "if pgrep -f gunicorn > /dev/null; then echo '✅ Gunicorn is running successfully'; else echo '❌ Gunicorn failed to start'; exit 1; fi"
           
           
 # Required secrets:
