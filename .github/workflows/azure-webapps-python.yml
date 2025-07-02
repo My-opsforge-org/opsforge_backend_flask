@@ -104,9 +104,17 @@ jobs:
         run: |
           sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && cat gunicorn.log || echo 'No gunicorn log file found'"
 
+      - name: Debug - Check all processes immediately after startup
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "ps aux | grep gunicorn"
+
+      - name: Debug - Test gunicorn in foreground to see errors
+        run: |
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "cd /home/${{ secrets.VM_USERNAME }}/app && source venv/bin/activate && source .env && timeout 5s gunicorn -w 1 -b 0.0.0.0:8001 manage:app --log-level debug || echo 'Foreground test completed'"
+
       - name: Check Gunicorn Processes
         run: |
-          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "sleep 3 && ps aux | grep gunicorn | grep -v grep"
+          sshpass -p ${{ secrets.VM_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_PUBLIC_IP }} "sleep 3 && ps aux | grep gunicorn | grep -v grep || echo 'No gunicorn processes found'"
 
       - name: Check Gunicorn Logs
         run: |
