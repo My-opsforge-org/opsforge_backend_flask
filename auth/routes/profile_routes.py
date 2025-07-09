@@ -54,16 +54,19 @@ def update_profile():
 @jwt_required()
 def get_all_users():
     try:
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(int(current_user_id))
         # Get pagination parameters
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
-        
         # Query users with pagination
         paginated_users = User.query.paginate(page=page, per_page=per_page, error_out=False)
-        
         # Prepare response
-        users_data = [user.to_dict() for user in paginated_users.items]
-        
+        users_data = []
+        for user in paginated_users.items:
+            user_dict = user.to_dict()
+            user_dict['is_following'] = current_user.is_following(user) if user.id != current_user_id else False
+            users_data.append(user_dict)
         return jsonify({
             'users': users_data,
             'total': paginated_users.total,
