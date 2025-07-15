@@ -79,3 +79,10 @@ def get_all_users():
         return jsonify({'error': str(e)}), 500
     finally:
         db.session.close() 
+
+@auth_bp.route('/users/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_by_id(user_id):
+    from auth.models import User
+    user = User.query.get_or_404(user_id)
+    return jsonify(user.to_dict()), 200 

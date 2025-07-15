@@ -81,6 +81,28 @@
 }
 ```
 
+### Get User by ID
+- **GET** `/api/users/<user_id>` (JWT required)
+- **Response (200):**
+```json
+{
+  "id": 2,
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "avatarUrl": "https://...",
+  "bio": "Traveler",
+  "age": 28,
+  "gender": "female",
+  "sun_sign": "leo",
+  "interests": ["hiking", "photography"],
+  "location": {"lat": 12.34, "lng": 56.78},
+  "createdAt": "2024-07-15T12:34:56.789Z",
+  "updatedAt": "2024-07-15T12:34:56.789Z",
+  "followers_count": 10,
+  "following_count": 5
+}
+```
+
 ---
 
 ## Follow System
@@ -224,228 +246,3 @@
   "image_urls": ["http://.../img2.jpg"]
 }
 ```
-- **Response (200):**
-```json
-{
-  "id": 1,
-  "title": "Updated title",
-  ...
-}
-```
-
-### Delete Post
-- **DELETE** `/api/posts/<post_id>` (JWT required, only author)
-- **Response (200):**
-```json
-{"message": "Post deleted successfully"}
-```
-
----
-
-## Profile Posts
-
-### Create Profile Post
-- **POST** `/api/profile/posts` (JWT required)
-- **Payload:**
-```json
-{
-  "title": "My new post",
-  "content": "Hello!",
-  "image_urls": ["http://.../img.jpg"]
-}
-```
-- **Response (201):**
-```json
-{
-  "message": "Post created successfully",
-  "post": {"id": 1, "title": "My new post", ...}
-}
-```
-
-### Get User Profile Posts
-- **GET** `/api/profile/<user_id>/posts` (JWT required)
-- **Response (200):**
-```json
-{
-  "posts": [ {"id": 1, "title": "My new post", ...}, ... ]
-}
-```
-
-### Update Profile Post
-- **PUT** `/api/profile/posts/<post_id>` (JWT required, only author)
-- **Payload:**
-```json
-{
-  "title": "Updated title",
-  "content": "Updated content",
-  "image_urls": ["http://.../img2.jpg"]
-}
-```
-- **Response (200):**
-```json
-{
-  "message": "Post updated successfully",
-  "post": {"id": 1, "title": "Updated title", ...}
-}
-```
-
-### Delete Profile Post
-- **DELETE** `/api/profile/posts/<post_id>` (JWT required, only author)
-- **Response (200):**
-```json
-{"message": "Post deleted successfully"}
-```
-
----
-
-## Comments
-
-### Create Comment
-- **POST** `/api/posts/<post_id>/comments` (JWT required)
-- **Payload:**
-```json
-{
-  "content": "Nice post!"
-}
-```
-- **Response (201):**
-```json
-{
-  "id": 1,
-  "content": "Nice post!",
-  ...
-}
-```
-
-### Get Comments for Post
-- **GET** `/api/posts/<post_id>/comments` (JWT required)
-- **Response (200):**
-```json
-[
-  {"id": 1, "content": "Nice post!", ...},
-  ...
-]
-```
-
-### Update Comment
-- **PUT** `/api/comments/<comment_id>` (JWT required, only author)
-- **Payload:**
-```json
-{
-  "content": "Updated comment"
-}
-```
-- **Response (200):**
-```json
-{
-  "id": 1,
-  "content": "Updated comment",
-  ...
-}
-```
-
-### Delete Comment
-- **DELETE** `/api/comments/<comment_id>` (JWT required, only author)
-- **Response (200):**
-```json
-{"message": "Comment deleted successfully"}
-```
-
----
-
-## Bookmarks
-
-### Bookmark Post
-- **POST** `/api/posts/<post_id>/bookmark` (JWT required)
-- **Response (200):**
-```json
-{"message": "Post bookmarked successfully"}
-```
-
-### Remove Bookmark
-- **DELETE** `/api/posts/<post_id>/bookmark` (JWT required)
-- **Response (200):**
-```json
-{"message": "Bookmark removed successfully"}
-```
-
-### Get Bookmarked Posts
-- **GET** `/api/bookmarks` (JWT required)
-- **Response (200):**
-```json
-[
-  {"id": 1, "title": "Trip to the mountains", ...},
-  ...
-]
-```
-
----
-
-## Reactions
-
-### Like Post
-- **POST** `/api/posts/<post_id>/like` (JWT required)
-- **Response (200):**
-```json
-{"message": "Post liked successfully"}
-```
-
-### Dislike Post
-- **POST** `/api/posts/<post_id>/dislike` (JWT required)
-- **Response (200):**
-```json
-{"message": "Post disliked successfully"}
-```
-
-### Remove Reaction
-- **DELETE** `/api/posts/<post_id>/reaction` (JWT required)
-- **Response (200):**
-```json
-{"message": "Reaction removed successfully"}
-```
-
----
-
-## Feed
-
-### Get Feed
-- **GET** `/api/feed` (JWT required)
-- **Query:** `?page=1&per_page=10`
-- **Response (200):**
-```json
-{
-  "posts": [ {"id": 1, "title": "...", ...}, ... ],
-  "total": 10,
-  "pages": 1,
-  "current_page": 1,
-  "has_next": false,
-  "has_prev": false
-}
-```
-
----
-
-## Explore
-
-### Get Places
-- **GET** `/api/explore/places` (JWT required)
-- **Query:** `?lat=...&lng=...&radius=1500&type=tourist_attraction`
-- **Response (200):**
-```json
-{
-  "results": [ {"name": "Eiffel Tower", ...}, ... ],
-  ...
-}
-```
-
-### Geocode Address
-- **GET** `/api/explore/geocode` (JWT required)
-- **Query:** `?address=...`
-- **Response (200):**
-```json
-{
-  "address": "Paris, France",
-  "latitude": 48.8566,
-  "longitude": 2.3522
-}
-``` 
