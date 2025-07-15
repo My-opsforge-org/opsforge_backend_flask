@@ -28,11 +28,21 @@ def create_app():
     app.config['JWT_BLACKLIST_ENABLED'] = True
     app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_size": 20,
+        "max_overflow": 30,
+        "pool_timeout": 30,
+    }
 
     # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+
+    # Ensure sessions are always removed after each request
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        db.session.remove()
 
     # Register JWT callbacks
     @jwt.token_in_blocklist_loader
