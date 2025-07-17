@@ -25,7 +25,8 @@ def get_feed():
         
         # Base query for posts
         query = Post.query
-        
+        posts = []
+
         # If user has communities or follows users, filter by them
         if community_ids or followed_user_ids:
             conditions = []
@@ -33,40 +34,35 @@ def get_feed():
                 conditions.append(Post.community_id.in_(community_ids))
             if followed_user_ids:
                 conditions.append(Post.author_id.in_(followed_user_ids))
-            query = query.filter(db.or_(*conditions))
-        else:
-            # If user has no communities and follows no one, return empty result
-            return jsonify({
-                'posts': [],
-                'total': 0,
-                'pages': 0,
-                'current_page': page,
-                'has_next': False,
-                'has_prev': False
-            }), 200
-        
-        # Order by creation date
-        query = query.order_by(Post.created_at.desc())
-        
-        # Paginate the results
-        paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
-        
+            filtered_query = query.filter(db.or_(*conditions))
+            posts += filtered_query.all()
+        # Always include the user's own profile posts
+        profile_posts = Post.query.filter_by(author_id=current_user_id, post_type='profile').all()
+        posts += profile_posts
+        # Remove duplicates by post id
+        unique_posts = {post.id: post for post in posts}.values()
+        # Sort by created_at descending
+        sorted_posts = sorted(unique_posts, key=lambda p: p.created_at, reverse=True)
+        # Paginate manually
+        total = len(sorted_posts)
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_posts = sorted_posts[start:end]
         # Prepare the response
         posts_data = []
-        for post in paginated_posts.items:
+        for post in paginated_posts:
             post_dict = post.to_dict()
             post_dict['author'] = post.author.to_dict() if post.author else None
             if post.community_id:
                 post_dict['community'] = post.community.to_dict()
             posts_data.append(post_dict)
-        
         return jsonify({
             'posts': posts_data,
-            'total': paginated_posts.total,
-            'pages': paginated_posts.pages,
+            'total': total,
+            'pages': (total + per_page - 1) // per_page,
             'current_page': page,
-            'has_next': paginated_posts.has_next,
-            'has_prev': paginated_posts.has_prev
+            'has_next': end < total,
+            'has_prev': start > 0
         }), 200
         
     except Exception as e:
