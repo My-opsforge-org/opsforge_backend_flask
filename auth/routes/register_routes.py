@@ -31,6 +31,9 @@ def register():
         
         db.session.add(new_user)
         db.session.commit()
+        # Make the user follow themselves
+        new_user.follow(new_user)
+        db.session.commit()
         
         return jsonify({'message': 'User created successfully'}), 201
     finally:
