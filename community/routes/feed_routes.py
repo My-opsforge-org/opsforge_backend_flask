@@ -19,6 +19,9 @@ def get_feed():
         community_ids = [c.id for c in current_user.communities_joined]
         # Get followed user IDs
         followed_user_ids = [u.id for u in current_user.following]
+        # Ensure current user's own posts are included
+        if current_user_id not in followed_user_ids:
+            followed_user_ids.append(current_user_id)
         
         # Base query for posts
         query = Post.query
