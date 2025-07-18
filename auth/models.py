@@ -40,7 +40,14 @@ class User(db.Model):
             interests = json.loads(self.interests) if self.interests else []
         except json.JSONDecodeError:
             interests = []
-            
+        
+        # Adjust followers/following count to exclude self-follow
+        followers_count = self.followers.count()
+        following_count = self.following.count()
+        if self.is_following(self):
+            followers_count -= 1
+            following_count -= 1
+        
         return {
             'id': self.id,
             'name': self.name,
@@ -57,8 +64,8 @@ class User(db.Model):
             } if self.latitude is not None and self.longitude is not None else None,
             'createdAt': self.createdAt.isoformat() if self.createdAt else None,
             'updatedAt': self.updatedAt.isoformat() if self.updatedAt else None,
-            'followers_count': self.followers.count(),
-            'following_count': self.following.count()
+            'followers_count': followers_count,
+            'following_count': following_count
         }
 
     def update_from_dict(self, data):
