@@ -26,14 +26,14 @@ def create_comment(post_id):
     db.session.add(comment)
     db.session.commit()
     
-    return jsonify(comment.to_dict()), 201
+    return jsonify(comment.to_dict(include_author=True)), 201
 
 @comment_bp.route('/posts/<int:post_id>/comments', methods=['GET'])
 @jwt_required()
 def get_post_comments(post_id):
     post = Post.query.get_or_404(post_id)
     comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.created_at.desc()).all()
-    return jsonify([comment.to_dict() for comment in comments]), 200
+    return jsonify([comment.to_dict(include_author=True) for comment in comments]), 200
 
 @comment_bp.route('/comments/<int:comment_id>', methods=['PUT'])
 @jwt_required()
