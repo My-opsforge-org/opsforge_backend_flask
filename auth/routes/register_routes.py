@@ -23,10 +23,12 @@ def register():
         
         # Create new user
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+        avatar_url = data.get('avatarUrl', 'https://picsum.photos/256/256')
         new_user = User(
             name=data['name'],
             email=data['email'],
-            password=hashed_password
+            password=hashed_password,
+            avatarUrl=avatar_url
         )
         
         db.session.add(new_user)
